@@ -1,5 +1,15 @@
+// load  products
+// ask ask for items
+
+// ask for quantity
+// check inventory
+// make purchase
+
+
+
 var mysql = require("mysql");
 
+//inquirer is used as a query 
 var inquirer = require('inquirer');
 var Table = require('cli-table2');
 
@@ -10,14 +20,17 @@ var connection = mysql.createConnection({
     database: "bamazon_db",
     port: 3306,
 })
-connection.connect();
+connection.connect(function (err) {
+    displayProducts()
+}
+);
 
 //the function used in the variable will display the tables neatly in the CLI using cli-table2
 function displayProducts() {
     //the below line connects us to the database through a query
     connection.query("SELECT * FROM products", function (error, res) {
         if (error) throw error;
-        
+
 
         console.log("---------------------------------------------");
         console.log("            Welcome to Bamazon               ");
@@ -25,7 +38,10 @@ function displayProducts() {
         console.log("");
         console.log("Find Your Product Below");
         console.log("")
-    
+
+        console.table(res)
+        shopping()
+
     });
     var table = new Table({
         head: ["product id", "product name", "cost", "stock quantity"]
@@ -47,42 +63,82 @@ function displayProducts() {
     // }
     console.log(table.toString());
     console.log("")
-    console.table(res)
+
 };
 
-displayProducts();
+// displayProducts();
 
 
 // connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
 //     if (error) throw error;
 //     console.log('The solution is: ', results[0].solution);
 //   });
-   
+
 //   connection.end();
 
 
+function shopping(inventory) {
+    inquirer.prompt([
+        {
+            name: "productToBuy",
+            type: "input",
+            message: "Please enter id number of the item you would like to purchase!",
+        }, {
+            name: "quantity",
+            type: "input",
+            message: "Please enter the quantity of items you would like to purchase!"
+        }
+    ]
+    )
+        .then(function (answer) {
 
-// var shopping = function() {
-//     inquirer.prompt({
-//     name: "productToBuy",
-//     type: "input",
-//     message: "Please enter the name of the item you wish to purchase!",
-//     }).then(function(answer1){
+            var selection = answer.productToBuy;
+            var quantity = answer.quantity;
+            // console.log("this is the quantity" + quantity)
+            // var selectedProduct = checkInventory(selection, inventory)
+            connection.query("SELECT * FROM products WHERE id=?", selection, function (err, res) {
+                // console.log(res)
+                console.log(res[0].stock_quantity)
+                if (quantity > res[0].stock_quantity) {
+                    console.log("Sorry we don't have that item in stock");
+                } else {
+                    var inventory = res
+                    var selectedProduct = checkInventory(selection, inventory)
+                    console.log(selectedProduct)
 
-//         var selection = answer1.productToBuy;
-//         connection.query("SELECT * FROM products WHERE Id=?", selection, function (err, res){
-//             if (err) throw err;
-//             //below statement handles error if something is not on the list
-//             if (res.length === 0){
-//                 console.log("that product does not exist, please enter a product from the list above")
+                    checkQuantity(quantity, selection)
 
-//                 shopping()
-//             }else{
-//                 console.log("you're good to go")
-//             }
-//         })
-//     })
-//     }
+                    if (err) throw err;
+                    //below statement handles error if something is not on the list
+
+                    else {
+                        console.log("We have your product in stock")
+
+                    }
+
+                }
+            })
+        })
+}
+
+function checkQuantity(quantity, id) {
+    connection.query('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', [quantity, id], function (error, results, fields) {
+        if (error) throw error;
+        console.log("thanks for your business");
+    });
+
+}
+
+
+
+//checking to see if it exists
+function checkInventory(selection, inventory) {
+    for (var i = 0; i < inventory.length; i++) {
+        if (inventory[i].stock_quantity === selection) {
+            return inventory[i]
+        };
+    }
+};
 
 
 
