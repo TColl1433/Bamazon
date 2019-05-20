@@ -11,7 +11,7 @@ var mysql = require("mysql");
 
 //inquirer is used as a query 
 var inquirer = require('inquirer');
-var Table = require('cli-table2');
+var Table = require('cli-table3');
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -32,20 +32,24 @@ function displayProducts() {
         if (error) throw error;
 
 
-        console.log("---------------------------------------------");
-        console.log("            Welcome to Bamazon               ");
-        console.log("---------------------------------------------");
+        console.log("----------------------------------------------------------------------------------------");
+        console.log("                         W E L C O M E  T O  B A M A Z O N !                            ");
+        console.log("----------------------------------------------------------------------------------------");
         console.log("");
-        console.log("Find Your Product Below");
+        console.log("                   Please Choose Your Product from the Table Below                     ");
         console.log("")
 
         console.table(res)
         shopping()
 
     });
+
+
+
+
     var table = new Table({
-        head: ["product id", "product name", "cost", "stock quantity"]
-        , colWidths: [12, 50, 8, 8],
+        // head: ['id', 'product_name', 'department_name', 'price', 'stock_quantity'],
+        colWidths: [12, 50, 8, 8],
         colAligns: ["center", "left", "right"],
         style: {
             head: ["blue"],
@@ -53,14 +57,20 @@ function displayProducts() {
         }
     });
 
-    // for (var i = 0; i < results.length; i++) {
+    // table.push(
+    //     ['First value', 'Second value']
+    //   , ['First value', 'Second value']
+    // );
+
+    // for (var i = 0; i < res.length; i++) {
     //     table.push([
-    //         results[i].id,
-    //         results[i].product_name,
-    //         results[i].price,
-    //         results[i].stock_quantity,
+    //         res[i].id,
+    //         res[i].product_name,
+    //         res[i].price,
+    //         resi].stock_quantity,
     //     ]);
     // }
+
     console.log(table.toString());
     console.log("")
 
@@ -82,11 +92,11 @@ function shopping(inventory) {
         {
             name: "productToBuy",
             type: "input",
-            message: "Please enter id number of the item you would like to purchase!",
+            message: "\nPlease enter id number of the item you would like to purchase!",
         }, {
             name: "quantity",
             type: "input",
-            message: "Please enter the quantity of items you would like to purchase!"
+            message: "\nPlease enter the quantity of items you would like to purchase!"
         }
     ]
     )
@@ -113,9 +123,10 @@ function shopping(inventory) {
 
                     else {
                         console.log("We have your product in stock")
-
+                        
                     }
-
+                    
+                   
                 }
             })
         })
@@ -124,7 +135,7 @@ function shopping(inventory) {
 function checkQuantity(quantity, id) {
     connection.query('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', [quantity, id], function (error, results, fields) {
         if (error) throw error;
-        console.log("thanks for your business");
+        console.log("thanks for your business!");
     });
 
 }
